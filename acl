@@ -1,0 +1,84 @@
+acl strony_rozrywkowe dstdom_regex "/etc/squid3/rozrywkowe.acl"
+
+rozrywkowe.acl:
+facebook
+nasza-klasa
+twitter
+demotywatory
+joemonster
+youtube
+spotify
+porn
+redtube
+
+acl portale dstdom_regex "/etc/squid3/portale.acl"
+
+portale.acl:
+interia
+onet
+wp
+
+acl czas_pracy time M T W H F A S 8:00-16:00
+
+acl uaktualnienia_windowsa urlpath_regex -i #.*widows.*\.msu$
+acl zakazane_pliki_projektantow urlpath_regex -i /etc/squid3/zakazane_pliki_projektantow.acl
+
+zakazane_pliki_projektantow.acl
+\.mp3$
+\.mp4$
+\.avi$
+\.mp3$
+\.torrent
+\.exe
+\.apk
+\.bat
+\.bin
+\.com
+\.gadget
+\.jar
+\.py
+\.wsf
+\.msu
+
+acl dozwolone_pliki_sekretarek_i_ksiegowych urlpath_regex -i /etc/squid3/dozwolone_pliki_sekretarek_i_ksiegowych.acl
+
+dozwolone_pliki_sekretarek_i_ksiegowych.acl
+\.doc
+\.pdf
+\.ppt
+\.zip
+\.csv
+\.xmls
+\.7z
+\.tar
+\.jpg
+\.png
+\.txt
+
+definiowanie klientow:
+acl prezes arp "/etc/squid3/presez_arp.acl"
+
+presez_arp.acl:
+08:00:27:84:24:BF
+08:00:27:81:08:73
+
+acl menadzerowie arp "/etc/squid3/menadzerowie_arp.acl"
+# zablokowanie dostępu do stron rozrywkowych w czasie pracy, włącznie z weekendami
+http_access allow menadzerowie !strony_rozrywkowe czas_pracy
+
+menadzerowie_arp.acl:
+08:00:27:E7:D5:37
+08:00:27:82:59:C5
+08:00:27:C3:BE:B8
+
+acl projektanci_i_programisci src 192.168.2.0/24 ??????? jak rozdzielic
+# zablokowanie dostępu do stron rozrywkowych przez cały czas
+http_access allow projektanci_i_programisci !strony_rozrywkowe
+# zablokowanie pobierania plikow z sieci
+http_access allow projektanci_i_programisci uaktualnienia_windowsa !zakazane_pliki_z_sieci uaktualnienia_windowsa
+
+acl administrator arp 08:00:27:EB:D7:94
+# zablokowanie stron rozrywkowych po godzinach pracy
+http_access allow administrator !strony_rozrywkowe !czas_pracy
+
+acl sekretarka_i_ksiegowa src 192.168.3.0/24
